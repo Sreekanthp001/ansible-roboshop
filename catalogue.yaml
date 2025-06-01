@@ -12,7 +12,7 @@
     ansible.builtin.dnf:
       name: nodejs
       state: present
-
+      
   - name: create app directory
     ansible.builtin.file:
       path: /app
@@ -22,11 +22,12 @@
     ansible.builtin.user:
       name: roboshop
       shell: /sbin/nologin
+      system: true
       home: /app
 
   - name: download catalogue code
     ansible.builtin.get_url:
-      url: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
+      url: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip 
       dest: /tmp/catalogue.zip
 
   # this module thinks file exist on ansible control server, needs to extract on to remote machine
@@ -53,7 +54,7 @@
   - name: start and enable catalogue
     ansible.builtin.service:
       name: catalogue
-      start: started
+      state: started
       enabled: yes
 
   - name: copy mongodb repo
@@ -63,11 +64,11 @@
 
   - name: install mongodb client
     ansible.builtin.dnf:
-      name: mongodb-mogosh
+      name: mongodb-mongosh
       state: present
 
-  - name: check product loaded or not
-    ansible.builtin.command: mongosh --host mongodb.sree84s.site --eval 'db.getMongo().getDBNames().indexOF("catalogue")'
+  - name: check products loaded or not
+    ansible.builtin.command: mongosh --host mongodb.sree84s.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
     register: catalogue_output
 
   - name: print catalogue output
@@ -77,4 +78,4 @@
   - name: load products
     ansible.builtin.shell: mongosh --host mongodb.sree84s.site < /app/db/master-data.js
     when: catalogue_output.stdout | int < 0
-
+  
